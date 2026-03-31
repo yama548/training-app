@@ -21,7 +21,7 @@ h1{font-size:18px;font-weight:500;margin-bottom:16px;padding:16px;background:#ff
 .row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
 .row label{font-size:13px;color:#888;width:72px;flex-shrink:0}
 .row input,.row select{flex:1;font-size:13px;padding:8px;border:0.5px solid #e0ded6;border-radius:8px;background:#fff}
-.btn{padding:10px;font-size:13px;cursor:pointer;border:0.5px solid #e0ded6;border-radius:8px;background:#1a1a18;color:#fff;width:100%}
+.btn{padding:10px;font-size:13px;cursor:pointer;border:0.5px solid #e0ded6;border-radius:8px;background:#1a1a18;color:#fff;width:100%;margin-top:4px}
 .log-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid #e0ded6;font-size:13px}
 .log-item:last-child{border-bottom:none}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:#e6f1fb;color:#0c447c}
@@ -32,7 +32,7 @@ h1{font-size:18px;font-weight:500;margin-bottom:16px;padding:16px;background:#ff
 .cal-day.has-log{background:#1D9E75;color:#fff;font-weight:500}
 .cal-day.today{border:1.5px solid #1a1a18}
 .section-title{font-size:14px;font-weight:500;margin-bottom:12px}
-.del{background:none;border:none;cursor:pointer;color:#ccc;font-size:16px}
+.del{background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:0 4px}
 </style>
 </head>
 <body>
@@ -49,7 +49,11 @@ h1{font-size:18px;font-weight:500;margin-bottom:16px;padding:16px;background:#ff
   <div class="card">
     <div class="section-title">今日の記録</div>
     <div class="row"><label>メニュー</label>
-      <select id="menu"><option>ベンチプレス</option><option>スクワット</option><option>デッドリフト</option><option>懸垂</option><option>腕立て伏せ</option><option>ランニング</option><option>サッカー練習</option><option>バスケ練習</option><option>その他</option></select>
+      <select id="menu">
+        <option>ベンチプレス</option><option>スクワット</option><option>デッドリフト</option>
+        <option>懸垂</option><option>腕立て伏せ</option><option>ランニング</option>
+        <option>サッカー練習</option><option>バスケ練習</option><option>その他</option>
+      </select>
     </div>
     <div class="row"><label>重量(kg)</label><input type="number" id="weight" placeholder="例: 60" min="0" step="0.5"></div>
     <div class="row"><label>回数/分</label><input type="number" id="reps" placeholder="例: 10" min="0"></div>
@@ -71,7 +75,10 @@ h1{font-size:18px;font-weight:500;margin-bottom:16px;padding:16px;background:#ff
   <div class="card">
     <div class="section-title">目標を設定</div>
     <div class="row"><label>メニュー</label>
-      <select id="g-menu"><option>ベンチプレス</option><option>スクワット</option><option>デッドリフト</option><option>懸垂</option><option>ランニング</option><option>サッカー練習</option><option>その他</option></select>
+      <select id="g-menu">
+        <option>ベンチプレス</option><option>スクワット</option><option>デッドリフト</option>
+        <option>懸垂</option><option>ランニング</option><option>サッカー練習</option><option>その他</option>
+      </select>
     </div>
     <div class="row"><label>目標重量</label><input type="number" id="g-weight" placeholder="例: 100" min="0"></div>
     <div class="row"><label>目標回数</label><input type="number" id="g-reps" placeholder="例: 20" min="0"></div>
@@ -94,20 +101,131 @@ var logs=JSON.parse(localStorage.getItem('tl')||'[]');
 var goals=JSON.parse(localStorage.getItem('tg')||'[]');
 var bodyLogs=JSON.parse(localStorage.getItem('tb')||'[]');
 function save(){localStorage.setItem('tl',JSON.stringify(logs));localStorage.setItem('tg',JSON.stringify(goals));localStorage.setItem('tb',JSON.stringify(bodyLogs));}
-function showTab(t){document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',['log','history','goals','body'][i]===t)});document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));document.getElementById(t).classList.add('active');if(t==='history')renderCalendar();if(t==='goals')renderGoals();if(t==='body')renderBody();}
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(function(el,i){el.classList.toggle('active',['log','history','goals','body'][i]===t);});
+  document.querySelectorAll('.section').forEach(function(el){el.classList.remove('active');});
+  document.getElementById(t).classList.add('active');
+  if(t==='history')renderCalendar();
+  if(t==='goals')renderGoals();
+  if(t==='body')renderBody();
+}
 function today(){return new Date().toISOString().slice(0,10);}
-function addLog(){var menu=document.getElementById('menu').value;var w=parseFloat(document.getElementById('weight').value)||0;var r=parseInt(document.getElementById('reps').value)||0;var s=parseInt(document.getElementById('sets').value)||1;var m=document.getElementById('memo').value;logs.push({date:today(),menu,weight:w,reps:r,sets:s,memo:m,id:Date.now()});save();document.getElementById('weight').value='';document.getElementById('reps').value='';document.getElementById('memo').value='';renderStats();renderTodayLogs();}
-function renderStats(){var tc=logs.filter(l=>l.date===today()).length;var days=new Set(logs.map(l=>l.date)).size;var streak=calcStreak();document.getElementById('stats').innerHTML='<div class="metric"><div class="metric-val">'+tc+'<\/div><div class="metric-lbl">今日の記録<\/div><\/div><div class="metric"><div class="metric-val">'+days+'<\/div><div class="metric-lbl">総練習日数<\/div><\/div><div class="metric"><div class="metric-val">'+streak+'<\/div><div class="metric-lbl">連続日数<\/div><\/div>';}
-function calcStreak(){var dates=Array.from(new Set(logs.map(l=>l.date))).sort().reverse();if(!dates.length)return 0;var streak=0;var d=new Date();for(var i=0;i<30;i++){var s=d.toISOString().slice(0,10);if(dates.includes(s))streak++;else if(streak>0)break;d.setDate(d.getDate()-1);}return streak;}
-function renderTodayLogs(){var tl=logs.filter(l=>l.date===today());var el=document.getElementById('today-logs');if(!tl.length){el.innerHTML='';return;}el.innerHTML='<div class="card"><div class="section-title">今日の記録一覧<\/div>'+tl.map(l=>'<div class="log-item"><div><span class="badge">'+l.menu+'<\/span>'+(l.weight?' '+l.weight+'kg':'')+' '+(l.reps?l.reps+'回':'')+' '+l.sets+'セット'+(l.memo?' — '+l.memo:'')+'<\/div><button class="del" onclick="delLog('+l.id+')">×<\/button><\/div>').join('')+'<\/div>';}
-function delLog(id){logs=logs.filter(l=>l.id!==id);save();renderStats();renderTodayLogs();}
-function renderCalendar(){var days=['日','月','火','水','木','金','土'];document.getElementById('cal-header').innerHTML=days.map(d=>'<div style="text-align:center;font-size:11px;color:#888">'+d+'<\/div>').join('');var d=new Date();var y=d.getFullYear();var m=d.getMonth();var first=new Date(y,m,1).getDay();var dim=new Date(y,m+1,0).getDate();var logDates=new Set(logs.map(l=>l.date));var ts=today();var cells='';for(var i=0;i<first;i++)cells+='<div><\/div>';for(var day=1;day<=dim;day++){var ds=y+'-'+(m+1<10?'0':'')+(m+1)+'-'+(day<10?'0':'')+day;var cls='cal-day'+(logDates.has(ds)?' has-log':'')+(ds===ts?' today':'');cells+='<div class="'+cls+'">'+day+'<\/div>';}document.getElementById('calendar').innerHTML=cells;var all=document.getElementById('all-logs');var grouped={};logs.forEach(l=>{if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l);});all.innerHTML=Object.keys(grouped).sort().reverse().map(date=>'<div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:8px">'+date+'<\/div>'+grouped[date].map(l=>'<div class="log-item"><span class="badge">'+l.menu+'<\/span> '+(l.weight?l.weight+'kg ':'')+l.reps+'回 '+l.sets+'セット'+(l.memo?' — '+l.memo:'')+'<\/div>').join('')+'<\/div>').join('')||'<p style="font-size:13px;color:#888">まだ記録がありません<\/p>';}
-function addGoal(){var menu=document.getElementById('g-menu').value;var w=parseFloat(document.getElementById('g-weight').value)||0;var r=parseInt(document.getElementById('g-reps').value)||0;goals.push({menu,weight:w,reps:r,id:Date.now()});save();renderGoals();document.getElementById('g-weight').value='';document.getElementById('g-reps').value='';}
-function renderGoals(){var el=document.getElementById('goals-list');if(!goals.length){el.innerHTML='<p style="font-size:13px;color:#888">目標を設定してください<\/p>';return;}el.innerHTML=goals.map(g=>{var best=logs.filter(l=>l.menu===g.menu).reduce((a,l)=>Math.max(a,l.weight),0);var bestR=logs.filter(l=>l.menu===g.menu).reduce((a,l)=>Math.max(a,l.reps),0);var pW=g.weight?Math.min(100,Math.round(best\/g.weight*100)):null;var pR=g.reps?Math.min(100,Math.round(bestR\/g.reps*100)):null;return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-weight:500;font-size:14px">'+g.menu+'<\/span><button class="del" onclick="delGoal('+g.id+')">×<\/button><\/div>'+(pW!==null?'<div style="font-size:12px;color:#888">重量: '+best+'kg \/ '+g.weight+'kg ('+pW+'%)<\/div><div class="progress-bar"><div class="progress-fill" style="width:'+pW+'%"><\/div><\/div>':'')+(pR!==null?'<div style="font-size:12px;color:#888;margin-top:8px">回数: '+bestR+'回 \/ '+g.reps+'回 ('+pR+'%)<\/div><div class="progress-bar"><div class="progress-fill" style="width:'+pR+'%"><\/div><\/div>':'')+'<\/div>';}).join('');}
-function delGoal(id){goals=goals.filter(g=>g.id!==id);save();renderGoals();}
-function addBody(){var w=parseFloat(document.getElementById('bw').value);var f=parseFloat(document.getElementById('bf').value);if(!w&&!f)return;bodyLogs.push({date:today(),weight:w||null,fat:f||null,id:Date.now()});save();renderBody();document.getElementById('bw').value='';document.getElementById('bf').value='';}
-function renderBody(){var el=document.getElementById('body-logs');if(!bodyLogs.length){el.innerHTML='<p style="font-size:13px;color:#888">まだ記録がありません<\/p>';return;}el.innerHTML='<div class="section-title">記録履歴<\/div>'+bodyLogs.slice().reverse().map(b=>'<div class="log-item"><span>'+b.date+'<\/span><span>'+(b.weight?b.weight+'kg ':'')+( b.fat?b.fat+'%':'')+' <button class="del" onclick="delBody('+b.id+')">×<\/button><\/span><\/div>').join('');}
-function delBody(id){bodyLogs=bodyLogs.filter(b=>b.id!==id);save();renderBody();}
+function addLog(){
+  var menu=document.getElementById('menu').value;
+  var w=parseFloat(document.getElementById('weight').value)||0;
+  var r=parseInt(document.getElementById('reps').value)||0;
+  var s=parseInt(document.getElementById('sets').value)||1;
+  var m=document.getElementById('memo').value;
+  logs.push({date:today(),menu:menu,weight:w,reps:r,sets:s,memo:m,id:Date.now()});
+  save();
+  document.getElementById('weight').value='';
+  document.getElementById('reps').value='';
+  document.getElementById('memo').value='';
+  renderStats();renderTodayLogs();
+}
+function renderStats(){
+  var tc=logs.filter(function(l){return l.date===today();}).length;
+  var days=new Set(logs.map(function(l){return l.date;})).size;
+  var streak=calcStreak();
+  document.getElementById('stats').innerHTML=
+    '<div class="metric"><div class="metric-val">'+tc+'</div><div class="metric-lbl">今日の記録</div></div>'+
+    '<div class="metric"><div class="metric-val">'+days+'</div><div class="metric-lbl">総練習日数</div></div>'+
+    '<div class="metric"><div class="metric-val">'+streak+'</div><div class="metric-lbl">連続日数</div></div>';
+}
+function calcStreak(){
+  var dates=Array.from(new Set(logs.map(function(l){return l.date;}))).sort().reverse();
+  if(!dates.length)return 0;
+  var streak=0;var d=new Date();
+  for(var i=0;i<30;i++){
+    var s=d.toISOString().slice(0,10);
+    if(dates.indexOf(s)>=0)streak++;
+    else if(streak>0)break;
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+function renderTodayLogs(){
+  var tl=logs.filter(function(l){return l.date===today();});
+  var el=document.getElementById('today-logs');
+  if(!tl.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="card"><div class="section-title">今日の記録一覧</div>'+
+    tl.map(function(l){return '<div class="log-item"><div><span class="badge">'+l.menu+'</span>'+
+    (l.weight?' '+l.weight+'kg':'')+' '+(l.reps?l.reps+'回':'')+' '+l.sets+'セット'+
+    (l.memo?' — '+l.memo:'')+'</div><button class="del" onclick="delLog('+l.id+')">×</button></div>';}).join('')+'</div>';
+}
+function delLog(id){logs=logs.filter(function(l){return l.id!==id;});save();renderStats();renderTodayLogs();}
+function renderCalendar(){
+  var days=['日','月','火','水','木','金','土'];
+  document.getElementById('cal-header').innerHTML=days.map(function(d){return '<div style="text-align:center;font-size:11px;color:#888">'+d+'</div>';}).join('');
+  var d=new Date();var y=d.getFullYear();var m=d.getMonth();
+  var first=new Date(y,m,1).getDay();
+  var dim=new Date(y,m+1,0).getDate();
+  var logDates=new Set(logs.map(function(l){return l.date;}));
+  var ts=today();var cells='';
+  for(var i=0;i<first;i++)cells+='<div></div>';
+  for(var day=1;day<=dim;day++){
+    var ds=y+'-'+(m+1<10?'0':'')+(m+1)+'-'+(day<10?'0':'')+day;
+    var cls='cal-day'+(logDates.has(ds)?' has-log':'')+(ds===ts?' today':'');
+    cells+='<div class="'+cls+'">'+day+'</div>';
+  }
+  document.getElementById('calendar').innerHTML=cells;
+  var grouped={};
+  logs.forEach(function(l){if(!grouped[l.date])grouped[l.date]=[];grouped[l.date].push(l);});
+  var html=Object.keys(grouped).sort().reverse().map(function(date){
+    return '<div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:8px">'+date+'</div>'+
+    grouped[date].map(function(l){return '<div class="log-item"><span class="badge">'+l.menu+'</span> '+
+    (l.weight?l.weight+'kg ':'')+l.reps+'回 '+l.sets+'セット'+(l.memo?' — '+l.memo:'')+'</div>';}).join('')+'</div>';
+  }).join('');
+  document.getElementById('all-logs').innerHTML=html||'<p style="font-size:13px;color:#888">まだ記録がありません</p>';
+}
+function addGoal(){
+  var menu=document.getElementById('g-menu').value;
+  var w=parseFloat(document.getElementById('g-weight').value)||0;
+  var r=parseInt(document.getElementById('g-reps').value)||0;
+  goals.push({menu:menu,weight:w,reps:r,id:Date.now()});
+  save();renderGoals();
+  document.getElementById('g-weight').value='';
+  document.getElementById('g-reps').value='';
+}
+function renderGoals(){
+  var el=document.getElementById('goals-list');
+  if(!goals.length){el.innerHTML='<p style="font-size:13px;color:#888">目標を設定してください</p>';return;}
+  el.innerHTML=goals.map(function(g){
+    var best=logs.filter(function(l){return l.menu===g.menu;}).reduce(function(a,l){return Math.max(a,l.weight);},0);
+    var bestR=logs.filter(function(l){return l.menu===g.menu;}).reduce(function(a,l){return Math.max(a,l.reps);},0);
+    var pW=g.weight?Math.min(100,Math.round(best/g.weight*100)):null;
+    var pR=g.reps?Math.min(100,Math.round(bestR/g.reps*100)):null;
+    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+    '<span style="font-weight:500;font-size:14px">'+g.menu+'</span>'+
+    '<button class="del" onclick="delGoal('+g.id+')">×</button></div>'+
+    (pW!==null?'<div style="font-size:12px;color:#888">重量: '+best+'kg / '+g.weight+'kg ('+pW+'%)</div>'+
+    '<div class="progress-bar"><div class="progress-fill" style="width:'+pW+'%"></div></div>':'')+
+    (pR!==null?'<div style="font-size:12px;color:#888;margin-top:8px">回数: '+bestR+'回 / '+g.reps+'回 ('+pR+'%)</div>'+
+    '<div class="progress-bar"><div class="progress-fill" style="width:'+pR+'%"></div></div>':'')+
+    '</div>';
+  }).join('');
+}
+function delGoal(id){goals=goals.filter(function(g){return g.id!==id;});save();renderGoals();}
+function addBody(){
+  var w=parseFloat(document.getElementById('bw').value);
+  var f=parseFloat(document.getElementById('bf').value);
+  if(!w&&!f)return;
+  bodyLogs.push({date:today(),weight:w||null,fat:f||null,id:Date.now()});
+  save();renderBody();
+  document.getElementById('bw').value='';
+  document.getElementById('bf').value='';
+}
+function renderBody(){
+  var el=document.getElementById('body-logs');
+  if(!bodyLogs.length){el.innerHTML='<p style="font-size:13px;color:#888">まだ記録がありません</p>';return;}
+  el.innerHTML='<div class="section-title">記録履歴</div>'+
+    bodyLogs.slice().reverse().map(function(b){
+      return '<div class="log-item"><span>'+b.date+'</span><span>'+
+      (b.weight?b.weight+'kg ':'')+( b.fat?b.fat+'%':'')+
+      ' <button class="del" onclick="delBody('+b.id+')">×</button></span></div>';
+    }).join('');
+}
+function delBody(id){bodyLogs=bodyLogs.filter(function(b){return b.id!==id;});save();renderBody();}
 renderStats();renderTodayLogs();
 </script>
 </body>
